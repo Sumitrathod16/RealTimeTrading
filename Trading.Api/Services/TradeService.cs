@@ -8,6 +8,8 @@ namespace Trading.Api.Services;
 public sealed class TradeService : ITradeService
 {
     private static int _tradeCounter = 10000;
+    private static bool _counterInitialized;
+    private static readonly object _counterLock = new();
     private readonly TradingDbContext _db;
     private readonly IPriceCache _prices;
     private readonly ILogger<TradeService> _logger;
@@ -17,7 +19,38 @@ public sealed class TradeService : ITradeService
         _db = db;
         _prices = prices;
         _logger = logger;
+        InitializeCounter();
     }
+
+    private void InitializeCounter()
+    {
+        if (_counterInitialized) return;
+        lock (_counterLock)
+        {
+            if (_counterInitialized) return;
+            try
+            {
+                var maxId = _db.Trades
+                    .OrderByDescending(t => t.TradeId)
+                    .Select(t => t.TradeId)
+                    .FirstOrDefault();
+
+                if (maxId != null && maxId.StartsWith("TRD") && int.TryParse(maxId.Substring(3), out var val))
+                {
+                    _tradeCounter = Math.Max(_tradeCounter, val);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to initialize trade counter from database");
+            }
+            finally
+            {
+                _counterInitialized = true;
+            }
+        }
+    }
+
 
     public async Task<PlaceOrderResponse> PlaceOrderAsync(PlaceOrderRequest request, CancellationToken cancellationToken = default)
     {
