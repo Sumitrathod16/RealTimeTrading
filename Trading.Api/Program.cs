@@ -20,6 +20,7 @@ MapEnv(builder.Configuration, "WS_URL", "ExternalApi:WebSocketUrl");
 MapEnv(builder.Configuration, "USER_ID", "Auth:UserId");
 MapEnv(builder.Configuration, "ACCOUNT_ID", "Auth:AccountId");
 MapEnv(builder.Configuration, "PASSWORD", "Auth:Password");
+MapEnv(builder.Configuration, "ALLOWED_ORIGINS", "Cors:AllowedOrigins");
 
 builder.Services.Configure<ExternalApiOptions>(builder.Configuration.GetSection(ExternalApiOptions.SectionName));
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.SectionName));
@@ -40,10 +41,14 @@ builder.Services.AddSingleton<IFeedNotifier, SignalRFeedNotifier>();
 builder.Services.AddHostedService<PriceFeedWorker>();
 
 builder.Services.AddSignalR();
+
+var allowedOriginsStr = builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:5173,http://localhost:3000";
+var allowedOrigins = allowedOriginsStr.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());

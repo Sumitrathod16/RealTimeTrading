@@ -5,7 +5,8 @@ import { fetchHealth, fetchPrices, fetchTrades, fetchPositions } from '../api/cl
 import type { Position, Trade } from '../types';
 
 const THROTTLE_MS = 200;
-const HUB_URL = '/hubs/trading';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) || '';
+const HUB_URL = `${API_BASE}/hubs/trading`;
 
 export function useTradingSocket() {
   const [connectionState, setConnectionState] = useState<ConnectionState>('Connecting');

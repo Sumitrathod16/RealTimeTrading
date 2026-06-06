@@ -1,6 +1,7 @@
 import type { HealthResponse, Position, PriceQuote, Trade } from '../types';
 
-const API = '/api';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL as string) || '';
+const API = `${API_BASE}/api`;
 
 export async function fetchHealth(): Promise<HealthResponse> {
   const res = await fetch(`${API}/health`);
