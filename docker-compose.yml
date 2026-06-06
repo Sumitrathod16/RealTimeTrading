@@ -1,0 +1,18 @@
+services:
+  trading-platform:
+    container_name: trading-platform
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - USER_ID=${USER_ID}
+      - ACCOUNT_ID=${ACCOUNT_ID}
+      - PASSWORD=${PASSWORD}
+      - AUTH_URL=${AUTH_URL}
+      - WS_URL=${WS_URL}
+      - ConnectionStrings__TradingDb=Data Source=data/trades.db
+    restart: always

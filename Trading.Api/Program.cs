@@ -6,6 +6,12 @@ using Trading.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://*:{port}");
+}
+
 builder.Configuration.AddEnvironmentVariables();
 
 // Map .env-style variables: AUTH_USER_ID -> Auth:UserId
@@ -58,8 +64,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.MapControllers();
 app.MapHub<TradingHub>("/hubs/trading");
+app.MapFallbackToFile("index.html");
 
 app.Logger.LogInformation("Trading API started on {Urls}", string.Join(", ", app.Urls));
 app.Run();
